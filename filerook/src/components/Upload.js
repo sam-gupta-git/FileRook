@@ -38,21 +38,18 @@ function Upload() {
           'Content-Type': 'multipart/form-data',
         },
       });
-      setUploadStatus('File uploaded successfully!');
+      console.log('Upload response:', response.data);
+      setUploadStatus(`File uploaded successfully! Key: ${response.data.fileDetails.key}`);
       setFile(null);
       fetchFiles(); // Refresh the file list after upload
     } catch (error) {
-      console.error('1 Error uploading file:', error);
+      console.error('Error uploading file:', error);
       if (error.response) {
-        // The request was made and the server responded with a status code
-        // that falls out of the range of 2xx
-        setUploadStatus(`2 Error uploading file: ${error.response.data}`);
+        setUploadStatus(`Error uploading file: ${error.response.data.error || error.response.data}`);
       } else if (error.request) {
-        // The request was made but no response was received
-        setUploadStatus('3 Error uploading file: No response received from server.');
+        setUploadStatus('Error uploading file: No response received from server.');
       } else {
-        // Something happened in setting up the request that triggered an Error
-        setUploadStatus(`4 Error uploading file: ${error.message}`);
+        setUploadStatus(`Error uploading file: ${error.message}`);
       }
     }
   };

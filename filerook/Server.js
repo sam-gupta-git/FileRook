@@ -43,32 +43,18 @@ app.post('/s3-upload', upload.single('file'), async (req, res) => {
   }
 
   try {
-    const uploadParams = {
-      Bucket: process.env.S3_BUCKET_NAME,
-      Key: req.file.key,
-      Body: req.file.buffer,
-      ContentType: req.file.mimetype,
-    };
-
-    const upload = new Upload({
-      client: s3Client,
-      params: uploadParams,
-    });
-
-    await upload.done();
-
     console.log('File uploaded successfully:', req.file);
-    res.status(200).send({
+    res.status(200).json({
       message: 'File uploaded successfully.',
       fileDetails: {
         key: req.file.key,
-        location: `https://${process.env.S3_BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/${req.file.key}`,
+        location: req.file.location,
         size: req.file.size
       }
     });
   } catch (error) {
-    console.error('Error uploading file:', error);
-    res.status(500).send('Error uploading file to S3.');
+    console.error('Error in upload route:', error);
+    res.status(500).json({ error: 'Error uploading file to S3.', details: error.message });
   }
 });
 
