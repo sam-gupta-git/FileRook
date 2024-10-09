@@ -12,7 +12,7 @@ function Upload() {
 
   const fetchFiles = async () => {
     try {
-      const response = await axios.get('http://localhost:5000/files');
+      const response = await axios.get('http://localhost:5000/s3-files');
       setFiles(response.data);
     } catch (error) {
       console.error('Error fetching files:', error);
@@ -33,7 +33,7 @@ function Upload() {
     formData.append('file', file);
 
     try {
-      await axios.post('http://localhost:5000/upload', formData, {
+      const response = await axios.post('http://localhost:5000/s3-upload', formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
@@ -42,8 +42,18 @@ function Upload() {
       setFile(null);
       fetchFiles(); // Refresh the file list after upload
     } catch (error) {
-      console.error('Error uploading file:', error);
-      setUploadStatus('Error uploading file. Please try again.');
+      console.error('1 Error uploading file:', error);
+      if (error.response) {
+        // The request was made and the server responded with a status code
+        // that falls out of the range of 2xx
+        setUploadStatus(`2 Error uploading file: ${error.response.data}`);
+      } else if (error.request) {
+        // The request was made but no response was received
+        setUploadStatus('3 Error uploading file: No response received from server.');
+      } else {
+        // Something happened in setting up the request that triggered an Error
+        setUploadStatus(`4 Error uploading file: ${error.message}`);
+      }
     }
   };
 
@@ -57,8 +67,8 @@ function Upload() {
       <h2>Uploaded Files</h2>
       <ul>
         {files.map((file) => (
-          <li key={file._id}>
-            {file.filename} - Uploaded on: {new Date(file.uploadDate).toLocaleString()}
+          <li key={file.Key}>
+            {file.Key} - Size: {file.Size} bytes - Last Modified: {new Date(file.LastModified).toLocaleString()}
           </li>
         ))}
       </ul>

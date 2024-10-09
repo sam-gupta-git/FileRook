@@ -13,7 +13,7 @@ function App() {
     <Router>
       <div className="App">
         <nav className="navbar">
-          <div className="navbar-logo">Filekeep</div>
+          <div className="navbar-logo">FileRook</div>
           <ul className="navbar-links">
             <li><Link to="/">Home</Link></li>
             <li><Link to="/files">My Files</Link></li>
