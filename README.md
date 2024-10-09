@@ -1,3 +1,3 @@
-# filekeep.ai
+# FileRook.me
 
-first commit
+A free and open-source online file manager and storage solution using MongoDB.
