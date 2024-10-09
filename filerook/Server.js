@@ -4,7 +4,6 @@ const multer = require('multer');
 const cors = require('cors');
 const { S3Client, ListObjectsV2Command, GetObjectCommand } = require('@aws-sdk/client-s3');
 const multerS3 = require('multer-s3');
-const { getSignedUrl } = require('@aws-sdk/s3-request-presigner');
 
 const app = express();
 const port = 5000;
@@ -73,19 +72,23 @@ app.get('/s3-files', async (req, res) => {
   }
 });
 
-// New endpoint to get a signed URL for a file
+// Updated endpoint to get a file from S3
 app.get('/s3-file/:key', async (req, res) => {
   const params = {
     Bucket: process.env.S3_BUCKET_NAME,
-    Key: req.params.key
+    Key: decodeURIComponent(req.params.key)
   };
 
   try {
     const command = new GetObjectCommand(params);
-    const signedUrl = await getSignedUrl(s3Client, command, { expiresIn: 3600 });
-    res.redirect(signedUrl);
+    const { Body, ContentType } = await s3Client.send(command);
+    
+    res.setHeader('Content-Type', ContentType);
+    res.setHeader('Content-Disposition', `attachment; filename="${params.Key}"`);
+    
+    Body.pipe(res);
   } catch (error) {
-    console.error('Error getting signed URL:', error);
+    console.error('Error getting file from S3:', error);
     res.status(500).send('Error getting file from S3.');
   }
 });
