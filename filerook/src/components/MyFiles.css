@@ -1,0 +1,85 @@
+.my-files-container {
+  padding: 20px;
+}
+
+.file-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 20px;
+}
+
+.file-item {
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  overflow: hidden;
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.file-item:hover {
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.file-item.expanded {
+  grid-column: span 2;
+  grid-row: span 2;
+}
+
+.file-icon {
+  height: 150px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: #f8f8f8;
+}
+
+.file-icon img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: cover;
+}
+
+.document-icon {
+  font-size: 48px;
+}
+
+.file-info {
+  padding: 10px;
+}
+
+.file-name {
+  font-weight: bold;
+  margin-bottom: 5px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.file-size, .file-date {
+  font-size: 0.8em;
+  color: #666;
+  margin: 0;
+}
+
+.expanded .file-icon {
+  height: 250px;
+}
+
+.expanded .file-name {
+  white-space: normal;
+}
+
+.download-link {
+  display: inline-block;
+  margin-top: 10px;
+  padding: 5px 10px;
+  background-color: #007bff;
+  color: white;
+  text-decoration: none;
+  border-radius: 4px;
+  font-size: 0.9em;
+}
+
+.download-link:hover {
+  background-color: #0056b3;
+}

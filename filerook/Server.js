@@ -2,9 +2,9 @@ require('dotenv').config();
 const express = require('express');
 const multer = require('multer');
 const cors = require('cors');
-const { S3Client, PutObjectCommand, ListObjectsV2Command } = require('@aws-sdk/client-s3');
-const { Upload } = require('@aws-sdk/lib-storage');
+const { S3Client, ListObjectsV2Command, GetObjectCommand } = require('@aws-sdk/client-s3');
 const multerS3 = require('multer-s3');
+const { getSignedUrl } = require('@aws-sdk/s3-request-presigner');
 
 const app = express();
 const port = 5000;
@@ -35,27 +35,22 @@ const upload = multer({
 });
 
 // Handle file upload to S3
-app.post('/s3-upload', upload.single('file'), async (req, res) => {
+app.post('/s3-upload', upload.single('file'), (req, res) => {
   console.log('Received upload request');
   if (!req.file) {
     console.error('No file uploaded');
-    return res.status(400).send('No file uploaded.');
+    return res.status(400).json({ error: 'No file uploaded.' });
   }
 
-  try {
-    console.log('File uploaded successfully:', req.file);
-    res.status(200).json({
-      message: 'File uploaded successfully.',
-      fileDetails: {
-        key: req.file.key,
-        location: req.file.location,
-        size: req.file.size
-      }
-    });
-  } catch (error) {
-    console.error('Error in upload route:', error);
-    res.status(500).json({ error: 'Error uploading file to S3.', details: error.message });
-  }
+  console.log('File uploaded successfully:', req.file);
+  res.status(200).json({
+    message: 'File uploaded successfully.',
+    fileDetails: {
+      key: req.file.key,
+      location: req.file.location,
+      size: req.file.size
+    }
+  });
 });
 
 // New endpoint to get the list of files from S3
@@ -78,7 +73,24 @@ app.get('/s3-files', async (req, res) => {
   }
 });
 
-// Add a general error handler
+// New endpoint to get a signed URL for a file
+app.get('/s3-file/:key', async (req, res) => {
+  const params = {
+    Bucket: process.env.S3_BUCKET_NAME,
+    Key: req.params.key
+  };
+
+  try {
+    const command = new GetObjectCommand(params);
+    const signedUrl = await getSignedUrl(s3Client, command, { expiresIn: 3600 });
+    res.redirect(signedUrl);
+  } catch (error) {
+    console.error('Error getting signed URL:', error);
+    res.status(500).send('Error getting file from S3.');
+  }
+});
+
+// Error handling
 app.use((err, req, res, next) => {
   console.error('Server error:', err);
   res.status(500).send('An error occurred on the server.');
