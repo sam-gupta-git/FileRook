@@ -1,23 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import axios from 'axios';
+import './Upload.css';
 
-function Upload() {
+function Upload({ onClose, onUploadComplete }) {
   const [file, setFile] = useState(null);
   const [uploadStatus, setUploadStatus] = useState('');
-  const [files, setFiles] = useState([]);
-
-  useEffect(() => {
-    fetchFiles();
-  }, []);
-
-  const fetchFiles = async () => {
-    try {
-      const response = await axios.get('http://localhost:5000/s3-files');
-      setFiles(response.data);
-    } catch (error) {
-      console.error('Error fetching files:', error);
-    }
-  };
 
   const handleFileChange = (event) => {
     setFile(event.target.files[0]);
@@ -41,7 +28,7 @@ function Upload() {
       console.log('Upload response:', response.data);
       setUploadStatus(`File uploaded successfully! Key: ${response.data.fileDetails.key}`);
       setFile(null);
-      fetchFiles(); // Refresh the file list after upload
+      onUploadComplete();
     } catch (error) {
       console.error('Error uploading file:', error);
       if (error.response) {
@@ -55,20 +42,14 @@ function Upload() {
   };
 
   return (
-    <div>
-      <h1>Upload Files</h1>
-      <input type="file" onChange={handleFileChange} />
-      <button onClick={handleUpload}>Upload</button>
-      {uploadStatus && <p>{uploadStatus}</p>}
-
-      <h2>Uploaded Files</h2>
-      <ul>
-        {files.map((file) => (
-          <li key={file.Key}>
-            {file.Key} - Size: {file.Size} bytes - Last Modified: {new Date(file.LastModified).toLocaleString()}
-          </li>
-        ))}
-      </ul>
+    <div className="upload-overlay">
+      <div className="upload-modal">
+        <h2>Upload File</h2>
+        <input type="file" onChange={handleFileChange} />
+        <button onClick={handleUpload}>Upload</button>
+        {uploadStatus && <p>{uploadStatus}</p>}
+        <button className="close-button" onClick={onClose}>Close</button>
+      </div>
     </div>
   );
 }

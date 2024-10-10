@@ -1,10 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import Upload from './Upload';
 import './MyFiles.css';
 
 function MyFiles() {
   const [files, setFiles] = useState([]);
   const [expandedFile, setExpandedFile] = useState(null);
+  const [showUpload, setShowUpload] = useState(false);
+  const [viewMode, setViewMode] = useState('grid'); // New state for view mode
 
   useEffect(() => {
     fetchFiles();
@@ -29,10 +32,25 @@ function MyFiles() {
     setExpandedFile(expandedFile === fileKey ? null : fileKey);
   };
 
+  const toggleViewMode = () => {
+    setViewMode(viewMode === 'grid' ? 'list' : 'grid');
+  };
+
   return (
     <div className="my-files-container">
       <h1>My Files</h1>
-      <div className="file-grid">
+      <div className={`file-container ${viewMode}`}>
+        {viewMode === 'list' && (
+          <div className="file-item file-header">
+            <div className="file-icon"></div>
+            <div className="file-info">
+              <p className="file-name">Name</p>
+              <p className="file-size">Size</p>
+              <p className="file-date">Last Modified</p>
+              <p className="file-actions">Actions</p>
+            </div>
+          </div>
+        )}
         {files.map((file) => (
           <div 
             key={file.Key} 
@@ -49,18 +67,35 @@ function MyFiles() {
             <div className="file-info">
               <p className="file-name">{file.Key}</p>
               <p className="file-size">{(file.Size / 1024).toFixed(2)} KB</p>
-              {expandedFile === file.Key && (
+              {(viewMode === 'list' || expandedFile === file.Key) && (
                 <>
-                  <p className="file-date">Last Modified: {new Date(file.LastModified).toLocaleString()}</p>
-                  <a href={`http://localhost:5000/s3-file/${encodeURIComponent(file.Key)}`} target="_blank" rel="noopener noreferrer" className="download-link">
-                    Download
-                  </a>
+                  <p className="file-date">{new Date(file.LastModified).toLocaleString()}</p>
+                  <div className="file-actions">
+                    <a href={`http://localhost:5000/s3-file/${encodeURIComponent(file.Key)}`} target="_blank" rel="noopener noreferrer" className="download-button" title="Download">
+                      ⬇️
+                    </a>
+                  </div>
                 </>
               )}
             </div>
           </div>
         ))}
       </div>
+      <button className="view-toggle-button" onClick={toggleViewMode}>
+        {viewMode === 'grid' ? '📋' : '📊'}
+      </button>
+      <button className="upload-button" onClick={() => setShowUpload(true)}>
+        <span className="plus-icon">+</span>
+      </button>
+      {showUpload && (
+        <Upload
+          onClose={() => setShowUpload(false)}
+          onUploadComplete={() => {
+            setShowUpload(false);
+            fetchFiles();
+          }}
+        />
+      )}
     </div>
   );
 }
